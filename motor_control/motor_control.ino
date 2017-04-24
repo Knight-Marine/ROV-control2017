@@ -1,12 +1,6 @@
 #include <Servo.h>
 #define INPUT_SIZE 30
 
-// Pin 13 has an LED connected on most Arduino boards.
-// give it a name:
-
-static const byte PinEight = 8;
-static const byte PinNine = 9;
-
 const byte numChars = 32;
 char receivedChars[numChars];
 
@@ -26,15 +20,10 @@ int thrustTwo_val;
 int thrustThree_val;
 int thrustFour_val;
 
-int startbyte = 106;
-int inbyte;
-
 // the setup routine runs once when you press reset:
 void setup() {
-  // initialize the digital pin as an output.
- 
-  Serial.begin(9600);
   
+  Serial.begin(9600);
   Serial.println("serial initalized....");
   
   //attach Servos to pins
@@ -43,17 +32,19 @@ void setup() {
   thrusterThree.attach(6);
   thrusterFour.attach(5);
   
+  delay(5000); //wait for ESCs to boot
+  
   thrusterOne.writeMicroseconds(1500);
   thrusterTwo.writeMicroseconds(1500);
   thrusterThree.writeMicroseconds(1500);
   thrusterFour.writeMicroseconds(1500);
   
-  delay(5000);
   Serial.println("Ready");
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
+  
   rec_Packet();
   if (newData == true) {
     parseData();
@@ -98,7 +89,7 @@ void rec_Packet () {
   }
 }
 
-  void parseData() {
+void parseData() {
     
     
     char * strtokIndx;
