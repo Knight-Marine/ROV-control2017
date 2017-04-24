@@ -12,7 +12,7 @@ WHITE=(255, 255, 255)
 #Verify with current sensor.
 thrustMagnitude = 250
 
-
+#Hello 
 class App:
     def __init__(self):
         pygame.init()
