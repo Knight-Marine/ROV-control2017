@@ -17,6 +17,8 @@ class App:
         # Set up the joystick
         pygame.joystick.init()
         
+        self.clock = pygame.time.Clock()
+        
         self.serReadCount = 0 
         self.amps = 0
         self.distLog = []
@@ -153,13 +155,18 @@ class App:
                 self.motors[1]=int((1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
             
             pass
-            '''         
+            s_lines = ["Waiting..."]
             #Serail writing of motors re-implement later. 
-            self.ser.write (str(self.motors))
-            s = self.ser.read(100)
-            self.draw_text(s, 100, 200, (255, 255, 255))'''         
+            self.ROV.write (str(self.motors))
+            if self.ROV.in_waiting > 100:
+                s = self.ROV.read(100)
+                s_lines = s.split("\n")
+                
+            for line, lnText in enumerate(s_lines):
+                self.draw_text(lnText, 370, 50+(line*20), (255, 255, 255))
 
-
+            
+            
             for i,mot in enumerate(self.motors):
                 if mot>1500:
                     self.motor_dots[i][0]=GREEN
@@ -173,8 +180,9 @@ class App:
                 pygame.draw.circle(self.screen, dot[0],dot[1],15,0)			
             
 
-            self.draw_text(str(self.motors), 370,40, (250,0,0))
+            self.draw_text(str(self.motors), 370,20, (250,0,0))
             
+            '''
             # Code for reading data from ampmeter
             if (self.ROV.in_waiting > 0):
                 instring = ""
@@ -217,7 +225,7 @@ class App:
            
             pygame.draw.rect(self.screen, (180,220,180), (350,290,300,100), 2)
             self.draw_text(str(self.amps)+" amps", 655,370, (10, 200, 10)) 
-
+            '''
             
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
@@ -229,7 +237,8 @@ class App:
                     pygame.draw.circle(self.screen, (0, 0, 200), (20 + (i * 30), 100), 10, 1)
 
                 self.center_text("%d" % i, 20 + (i * 30), 100, (255, 255, 255))
-
+            
+            self.clock.tick(20)
             pygame.display.flip()
 
     def quit(self):
