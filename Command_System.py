@@ -38,10 +38,10 @@ class App:
         # Motors
         self.motors=[0,0,0,0]
 		# 0,1,2,3 IN ORDER
-        self.motor_dots=[[BLUE,(485,180),1],
-		                 [BLUE,(565,180),2],
-						 [BLUE,(505,230),3],
-						 [BLUE,(545,230),4]]
+        self.motor_dots=[[BLUE,(485,180),'1'],
+		                 [BLUE,(565,180),'2'],
+						 [BLUE,(505,230),'3'],
+						 [BLUE,(545,230),'4']]
         
         self.deadzone = .2
         
