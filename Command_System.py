@@ -178,6 +178,8 @@ class App:
             s_lines = ["Waiting..."]
             #serial writing of motors 
             self.ROV.write (str(self.motors))
+            
+            #Buffer overflow protection overflow in the input buffer was blocking communication.
             if self.ROV.in_waiting > 2000:
                 self.ROV.reset_input_buffer()
             '''
