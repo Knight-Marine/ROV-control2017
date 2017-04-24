@@ -5,7 +5,12 @@ import serial
 GREEN=(0,255,0)
 RED=(255,0,0)
 BLUE=(0,0,255)
+WHITE=(255, 255, 255)
 
+# thruster pulseout Level 1500 +/- 250 
+#required for current limitations per calculation by FK
+#Verify with current sensor.
+thrustMagnitude = 250
 
 
 class App:
@@ -33,12 +38,12 @@ class App:
         # Motors
         self.motors=[0,0,0,0]
 		# 0,1,2,3 IN ORDER
-        self.motor_dots=[[BLUE,(485,180)],
-		                 [BLUE,(565,180)],
-						 [BLUE,(505,230)],
-						 [BLUE,(545,230)]]
+        self.motor_dots=[[BLUE,(485,180),1],
+		                 [BLUE,(565,180),2],
+						 [BLUE,(505,230),3],
+						 [BLUE,(545,230),4]]
         
-        self.deadzone = .3
+        self.deadzone = .2
         
         
         # Enumerate joysticks
@@ -119,44 +124,47 @@ class App:
             pygame.draw.circle(self.screen, (95,158,160),(260+int(self.my_joystick.get_axis(2)*80),310+int(self.my_joystick.get_axis(3)*80)),10, 0)
             
             #Use joystick position to set motor states
+            
             if self.my_joystick.get_axis(1)>self.deadzone:
-                              # forward/reverse * +/- 300. 1200-1800 absoloute value. axis 1
-                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
-                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
+                
+                #forward/reverse * +/- thrustMagnitude. 1250-1750 absoloute value. axis 1
+                #1500 is stop value.
+                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(1)<self.deadzone*-1:
-                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
-                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
+                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
             else:
                 self.motors[2]=1500
                 self.motors[3]=1500
 
             if self.my_joystick.get_axis(2)>self.deadzone:
-                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
-                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
+                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(2)<self.deadzone*-1:
-                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
-                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
+                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
 
             if self.my_joystick.get_axis(3)>self.deadzone:
-                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
-                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
+                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(3)<self.deadzone*-1:
-                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
-                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
+                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
             else:
                 self.motors[0]=1500
                 self.motors[1]=1500
 				
             if self.my_joystick.get_axis(0)>self.deadzone:
-                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
-                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
+                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(0)<self.deadzone*-1:
-                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
-                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
+                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
             
             pass
             s_lines = ["Waiting..."]
-            #Serail writing of motors re-implement later. 
+            #serial writing of motors 
             self.ROV.write (str(self.motors))
             if self.ROV.in_waiting > 100:
                 s = self.ROV.read(100)
@@ -177,7 +185,8 @@ class App:
             
             
             for dot in self.motor_dots:
-                pygame.draw.circle(self.screen, dot[0],dot[1],15,0)			
+                pygame.draw.circle(self.screen, dot[0],dot[1],15,0)
+                self.center_text(dot[2], dot[1][0], dot[1][1] , WHITE)
             
 
             self.draw_text(str(self.motors), 370,20, (250,0,0))
