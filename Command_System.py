@@ -34,6 +34,7 @@ class App:
         
         #Set up serial connection
         self.ROV = serial.Serial("COM6",9600, timeout=0)
+        self.connected = False
 		
         # Motors
         self.motors=[0,0,0,0]
@@ -98,6 +99,17 @@ class App:
         self.screen.blit(surface, (x - surface.get_width() / 2, y - surface.get_height() / 2))
 
     def main(self):
+        while(self.connected == False):
+            self.draw_text("Waiting for connection...", 5,5, WHITE)
+            msg = ""
+            if self.ROV.in_waiting > 5:
+                msg = self.ROV.readline()
+            if "Ready" in msg:
+                self.connected = True
+            self.clock.tick(20)
+            pygame.display.flip()
+        
+        
         while (True):
             self.g_keys = pygame.event.get()
 
@@ -166,13 +178,16 @@ class App:
             s_lines = ["Waiting..."]
             #serial writing of motors 
             self.ROV.write (str(self.motors))
+            if self.ROV.in_waiting > 2000:
+                self.ROV.reset_input_buffer()
+            '''
             if self.ROV.in_waiting > 100:
                 s = self.ROV.read(100)
                 s_lines = s.split("\n")
                 
             for line, lnText in enumerate(s_lines):
                 self.draw_text(lnText, 370, 50+(line*20), (255, 255, 255))
-
+            '''
             
             
             for i,mot in enumerate(self.motors):
@@ -191,7 +206,7 @@ class App:
 
             self.draw_text(str(self.motors), 370,20, (250,0,0))
             
-            '''
+            
             # Code for reading data from ampmeter
             if (self.ROV.in_waiting > 0):
                 instring = ""
@@ -208,7 +223,7 @@ class App:
                     
                     
                 print instring 
-                if len(instring)>3:
+                if len(instring)>=3:
                     self.amps = int(instring[1:-1])
 
                     self.distLog.insert(0,self.amps)
@@ -234,7 +249,7 @@ class App:
            
             pygame.draw.rect(self.screen, (180,220,180), (350,290,300,100), 2)
             self.draw_text(str(self.amps)+" amps", 655,370, (10, 200, 10)) 
-            '''
+            self.draw_text("Current Amperes", 355, 270, WHITE)
             
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
@@ -247,7 +262,7 @@ class App:
 
                 self.center_text("%d" % i, 20 + (i * 30), 100, (255, 255, 255))
             
-            self.clock.tick(20)
+            self.clock.tick(80)
             pygame.display.flip()
 
     def quit(self):
