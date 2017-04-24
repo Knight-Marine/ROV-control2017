@@ -5,7 +5,12 @@ import serial
 GREEN=(0,255,0)
 RED=(255,0,0)
 BLUE=(0,0,255)
+WHITE=(255, 255, 255)
 
+# thruster pulseout Level 1500 +/- 250 
+#required for current limitations per calculation by FK
+#Verify with current sensor.
+thrustMagnitude = 250
 
 
 class App:
@@ -17,6 +22,8 @@ class App:
         # Set up the joystick
         pygame.joystick.init()
         
+        self.clock = pygame.time.Clock()
+        
         self.serReadCount = 0 
         self.amps = 0
         self.distLog = []
@@ -27,16 +34,17 @@ class App:
         
         #Set up serial connection
         self.ROV = serial.Serial("COM6",9600, timeout=0)
+        self.connected = False
 		
         # Motors
         self.motors=[0,0,0,0]
 		# 0,1,2,3 IN ORDER
-        self.motor_dots=[[BLUE,(485,180)],
-		                 [BLUE,(565,180)],
-						 [BLUE,(505,230)],
-						 [BLUE,(545,230)]]
+        self.motor_dots=[[BLUE,(485,180),'1'],
+		                 [BLUE,(565,180),'2'],
+						 [BLUE,(505,230),'3'],
+						 [BLUE,(545,230),'4']]
         
-        self.deadzone = .3
+        self.deadzone = .2
         
         
         # Enumerate joysticks
@@ -91,6 +99,17 @@ class App:
         self.screen.blit(surface, (x - surface.get_width() / 2, y - surface.get_height() / 2))
 
     def main(self):
+        while(self.connected == False):
+            self.draw_text("Waiting for connection...", 5,5, WHITE)
+            msg = ""
+            if self.ROV.in_waiting > 5:
+                msg = self.ROV.readline()
+            if "Ready" in msg:
+                self.connected = True
+            self.clock.tick(20)
+            pygame.display.flip()
+        
+        
         while (True):
             self.g_keys = pygame.event.get()
 
@@ -117,49 +136,62 @@ class App:
             pygame.draw.circle(self.screen, (95,158,160),(260+int(self.my_joystick.get_axis(2)*80),310+int(self.my_joystick.get_axis(3)*80)),10, 0)
             
             #Use joystick position to set motor states
+            
             if self.my_joystick.get_axis(1)>self.deadzone:
-                              # forward/reverse * +/- 300. 1200-1800 absoloute value. axis 1
-                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
-                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
+                
+                #forward/reverse * +/- thrustMagnitude. 1250-1750 absoloute value. axis 1
+                #1500 is stop value.
+                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(1)<self.deadzone*-1:
-                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
-                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(1)) * 300) + 1500)
+                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(1)) * thrustMagnitude) + 1500)
             else:
                 self.motors[2]=1500
                 self.motors[3]=1500
 
             if self.my_joystick.get_axis(2)>self.deadzone:
-                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
-                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
+                self.motors[2]=int((1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((-1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(2)<self.deadzone*-1:
-                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
-                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(2)) * 300) + 1500)
+                self.motors[2]=int((-1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
+                self.motors[3]=int((1 *abs(self.my_joystick.get_axis(2)) * thrustMagnitude) + 1500)
 
             if self.my_joystick.get_axis(3)>self.deadzone:
-                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
-                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
+                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(3)<self.deadzone*-1:
-                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
-                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(3)) * 300) + 1500)
+                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(3)) * thrustMagnitude) + 1500)
             else:
                 self.motors[0]=1500
                 self.motors[1]=1500
 				
             if self.my_joystick.get_axis(0)>self.deadzone:
-                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
-                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
+                self.motors[0]=int((1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((-1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
             elif self.my_joystick.get_axis(0)<self.deadzone*-1:
-                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
-                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(0)) * 300) + 1500)
+                self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
+                self.motors[1]=int((1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
             
             pass
-            '''         
-            #Serail writing of motors re-implement later. 
-            self.ser.write (str(self.motors))
-            s = self.ser.read(100)
-            self.draw_text(s, 100, 200, (255, 255, 255))'''         
-
-
+            s_lines = ["Waiting..."]
+            #serial writing of motors 
+            self.ROV.write (str(self.motors))
+            
+            #Buffer overflow protection overflow in the input buffer was blocking communication.
+            if self.ROV.in_waiting > 2000:
+                self.ROV.reset_input_buffer()
+            '''
+            if self.ROV.in_waiting > 100:
+                s = self.ROV.read(100)
+                s_lines = s.split("\n")
+                
+            for line, lnText in enumerate(s_lines):
+                self.draw_text(lnText, 370, 50+(line*20), (255, 255, 255))
+            '''
+            
+            
             for i,mot in enumerate(self.motors):
                 if mot>1500:
                     self.motor_dots[i][0]=GREEN
@@ -170,10 +202,12 @@ class App:
             
             
             for dot in self.motor_dots:
-                pygame.draw.circle(self.screen, dot[0],dot[1],15,0)			
+                pygame.draw.circle(self.screen, dot[0],dot[1],15,0)
+                self.center_text(dot[2], dot[1][0], dot[1][1] , WHITE)
             
 
-            self.draw_text(str(self.motors), 370,40, (250,0,0))
+            self.draw_text(str(self.motors), 370,20, (250,0,0))
+            
             
             # Code for reading data from ampmeter
             if (self.ROV.in_waiting > 0):
@@ -191,7 +225,7 @@ class App:
                     
                     
                 print instring 
-                if len(instring)>3:
+                if len(instring)>=3:
                     self.amps = int(instring[1:-1])
 
                     self.distLog.insert(0,self.amps)
@@ -217,7 +251,7 @@ class App:
            
             pygame.draw.rect(self.screen, (180,220,180), (350,290,300,100), 2)
             self.draw_text(str(self.amps)+" amps", 655,370, (10, 200, 10)) 
-
+            self.draw_text("Current Amperes", 355, 270, WHITE)
             
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
@@ -229,7 +263,8 @@ class App:
                     pygame.draw.circle(self.screen, (0, 0, 200), (20 + (i * 30), 100), 10, 1)
 
                 self.center_text("%d" % i, 20 + (i * 30), 100, (255, 255, 255))
-
+            
+            self.clock.tick(80)
             pygame.display.flip()
 
     def quit(self):
