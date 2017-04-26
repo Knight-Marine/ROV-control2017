@@ -31,5 +31,5 @@ void loop() {
    } else {
          digitalWrite (7,LOW);
          digitalWrite (8,LOW);
-   } delay(200);
+   } delay(10);
 }
