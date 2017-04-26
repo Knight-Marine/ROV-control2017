@@ -12,7 +12,7 @@ WHITE=(255, 255, 255)
 #Verify with current sensor.
 thrustMagnitude = 250
 
-
+#Hello 
 class App:
     def __init__(self):
         pygame.init()
@@ -34,6 +34,7 @@ class App:
         
         #Set up serial connection
         self.ROV = serial.Serial("COM6",9600, timeout=0)
+        self.BOX = serial.Serial("COM8", 9600, timeout=0)
         self.connected = False
 		
         # Motors
@@ -173,11 +174,13 @@ class App:
             elif self.my_joystick.get_axis(0)<self.deadzone*-1:
                 self.motors[0]=int((-1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
                 self.motors[1]=int((1 *abs(self.my_joystick.get_axis(0)) * thrustMagnitude) + 1500)
-            
+                
             pass
             s_lines = ["Waiting..."]
             #serial writing of motors 
+            print self.motors
             self.ROV.write (str(self.motors))
+            self.draw_text (str(self.ROV.out_waiting), 370,40, WHITE)
             
             #Buffer overflow protection overflow in the input buffer was blocking communication.
             if self.ROV.in_waiting > 2000:
@@ -255,7 +258,9 @@ class App:
             
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
-
+            if (self.my_joystick.get_button(5)):
+                self.BOX.write("c")
+                self.BOX.write("o")
             for i in range(0, self.my_joystick.get_numbuttons()):
                 if (self.my_joystick.get_button(i)):
                     pygame.draw.circle(self.screen, (0, 0, 200), (20 + (i * 30), 100), 10, 0)
@@ -264,7 +269,7 @@ class App:
 
                 self.center_text("%d" % i, 20 + (i * 30), 100, (255, 255, 255))
             
-            self.clock.tick(80)
+            self.clock.tick(40)
             pygame.display.flip()
 
     def quit(self):

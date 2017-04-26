@@ -64,15 +64,12 @@ void loop() {
     newData = false;
   }
   
-  if (millis()-lastMeasure > 200){
-    trigPulse(trigPin);
-    duration = pulseIn(echoPin, HIGH);
-    distance = duration*0.034/2;
+  if (millis()-lastMeasure > 200){          //timer 
     sensorVoltage = analogRead(0);
     Serial.print("<");
-    Serial.print(distance);
-    Serial.print(",");
     Serial.print(sensorVoltage);
+   // Serial.print(",");
+    //Serial.print(sensorVoltage);
     Serial.println(">");
     lastMeasure = millis();
   }
@@ -91,7 +88,7 @@ void rec_Packet () {
 
       if (recInProgress == true) {
         if (rc != endMarker) {
-          receivedChars [ndx] = rc;
+          receivedChars[ndx] = rc;
           ndx++;
           if (ndx >= numChars) {
             ndx = numChars - 1;
