@@ -33,9 +33,8 @@ class App:
         self.joystick_names = []
         
         #Set up serial connection
-        self.ROV = serial.Serial("COM6",9600, timeout=0)
-        self.BOX = serial.Serial("COM8", 9600, timeout=0)
-        self.connected = False
+        self.ROV = serial.Serial("COM11",9600, timeout=0)
+        self.BOX = serial.Serial("COM12", 9600, timeout=0)
 		
         # Motors
         self.motors=[0,0,0,0]
@@ -100,15 +99,6 @@ class App:
         self.screen.blit(surface, (x - surface.get_width() / 2, y - surface.get_height() / 2))
 
     def main(self):
-        while(self.connected == False):
-            self.draw_text("Waiting for connection...", 5,5, WHITE)
-            msg = ""
-            if self.ROV.in_waiting > 5:
-                msg = self.ROV.readline()
-            if "Ready" in msg:
-                self.connected = True
-            self.clock.tick(20)
-            pygame.display.flip()
         
         
         while (True):
@@ -258,9 +248,13 @@ class App:
             
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
-            if (self.my_joystick.get_button(5)):
+            
+            #control the relay
+            if (self.my_joystick.get_button(6)):
                 self.BOX.write("c")
+            if (self.my_joystick.get_button(7)):
                 self.BOX.write("o")
+            
             for i in range(0, self.my_joystick.get_numbuttons()):
                 if (self.my_joystick.get_button(i)):
                     pygame.draw.circle(self.screen, (0, 0, 200), (20 + (i * 30), 100), 10, 0)
