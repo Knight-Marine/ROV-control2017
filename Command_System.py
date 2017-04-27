@@ -7,10 +7,13 @@ RED=(255,0,0)
 BLUE=(0,0,255)
 WHITE=(255, 255, 255)
 
+pygame.time.set_timer(pygame.USEREVENT, 100)
+
 # thruster pulseout Level 1500 +/- 250 
 #required for current limitations per calculation by FK
 #Verify with current sensor.
 thrustMagnitude = 250
+
 
 #Hello 
 class App:
@@ -33,8 +36,9 @@ class App:
         self.joystick_names = []
         
         #Set up serial connection
-        self.ROV = serial.Serial("COM11",9600, timeout=0)
-        self.BOX = serial.Serial("COM12", 9600, timeout=0)
+        self.ROV = serial.Serial("COM6",9600, timeout=0)
+        self.BOX = serial.Serial("COM8", 9600, timeout=0)
+        self.connected = False
 		
         # Motors
         self.motors=[0,0,0,0]
@@ -99,6 +103,15 @@ class App:
         self.screen.blit(surface, (x - surface.get_width() / 2, y - surface.get_height() / 2))
 
     def main(self):
+        while(self.connected == False):
+            self.draw_text("Waiting for connection...", 5,5, WHITE)
+            msg = ""
+            if self.ROV.in_waiting > 5:
+                msg = self.ROV.readline()
+            if "Ready" in msg:
+                self.connected = True
+            self.clock.tick(20)
+            pygame.display.flip()
         
         
         while (True):
@@ -265,6 +278,7 @@ class App:
             
             self.clock.tick(40)
             pygame.display.flip()
+            
 
     def quit(self):
         self.ROV.close()
