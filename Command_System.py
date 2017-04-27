@@ -7,10 +7,13 @@ RED=(255,0,0)
 BLUE=(0,0,255)
 WHITE=(255, 255, 255)
 
+pygame.time.set_timer(pygame.USEREVENT, 100)
+
 # thruster pulseout Level 1500 +/- 250 
 #required for current limitations per calculation by FK
 #Verify with current sensor.
 thrustMagnitude = 250
+
 
 #Hello 
 class App:
@@ -178,9 +181,18 @@ class App:
             pass
             s_lines = ["Waiting..."]
             #serial writing of motors 
+            
+            #put the following into the for event loop like on the example page. 
+            
+            # from here 
             print self.motors
             self.ROV.write (str(self.motors))
-            self.draw_text (str(self.ROV.out_waiting), 370,40, WHITE)
+            #control the relay
+            if (self.my_joystick.get_button(6)):
+                self.BOX.write("c")
+            if (self.my_joystick.get_button(7)):
+                self.BOX.write("o")
+            #to here
             
             #Buffer overflow protection overflow in the input buffer was blocking communication.
             if self.ROV.in_waiting > 2000:
@@ -258,9 +270,9 @@ class App:
             
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
-            if (self.my_joystick.get_button(5)):
-                self.BOX.write("c")
-                self.BOX.write("o")
+            
+
+            
             for i in range(0, self.my_joystick.get_numbuttons()):
                 if (self.my_joystick.get_button(i)):
                     pygame.draw.circle(self.screen, (0, 0, 200), (20 + (i * 30), 100), 10, 0)
@@ -271,6 +283,7 @@ class App:
             
             self.clock.tick(40)
             pygame.display.flip()
+            
 
     def quit(self):
         self.ROV.close()
