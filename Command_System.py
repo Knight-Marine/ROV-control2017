@@ -185,13 +185,16 @@ class App:
             #put the following into the for event loop like on the example page. 
             
             # from here 
-            print self.motors
-            self.ROV.write (str(self.motors))
-            #control the relay
-            if (self.my_joystick.get_button(6)):
-                self.BOX.write("c")
-            if (self.my_joystick.get_button(7)):
-                self.BOX.write("o")
+            for e in pygame.event.get():
+                if e.type == pygame.USEREVENT: 
+           
+                    print self.motors
+                    self.ROV.write (str(self.motors))
+                    #control the relay
+                    if (self.my_joystick.get_button(6)):
+                        self.BOX.write("c")
+                    if (self.my_joystick.get_button(7)):
+                        self.BOX.write("o")
             #to here
             
             #Buffer overflow protection overflow in the input buffer was blocking communication.
