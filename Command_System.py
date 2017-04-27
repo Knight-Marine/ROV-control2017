@@ -181,9 +181,18 @@ class App:
             pass
             s_lines = ["Waiting..."]
             #serial writing of motors 
+            
+            #put the following into the for event loop like on the example page. 
+            
+            # from here 
             print self.motors
             self.ROV.write (str(self.motors))
-            self.draw_text (str(self.ROV.out_waiting), 370,40, WHITE)
+            #control the relay
+            if (self.my_joystick.get_button(6)):
+                self.BOX.write("c")
+            if (self.my_joystick.get_button(7)):
+                self.BOX.write("o")
+            #to here
             
             #Buffer overflow protection overflow in the input buffer was blocking communication.
             if self.ROV.in_waiting > 2000:
@@ -262,11 +271,7 @@ class App:
             #code for buttons
             self.draw_text("Buttons (%d)" % self.my_joystick.get_numbuttons(), 5, 75, (255, 255, 255))
             
-            #control the relay
-            if (self.my_joystick.get_button(6)):
-                self.BOX.write("c")
-            if (self.my_joystick.get_button(7)):
-                self.BOX.write("o")
+
             
             for i in range(0, self.my_joystick.get_numbuttons()):
                 if (self.my_joystick.get_button(i)):
