@@ -3,6 +3,8 @@
 #define trigPin 3
 #define echoPin 2
 
+//foo this is a comment to test.
+
 long duration;
 int distance;
 int avgDist;
